@@ -23,6 +23,16 @@ device = None
 
 
 async def inference(request: Request) -> StreamingResponse:
+
+    # import sentencepiece
+
+    # text_tokenizer_path = hf_hub_download(
+    #     loaders.DEFAULT_REPO, loaders.TEXT_TOKENIZER_NAME
+    # )
+    # text_tokenizer = sentencepiece.SentencePieceProcessor(
+    #     model_file=text_tokenizer_path,
+    # )
+
     data = await request.json()
     sample_rate = data["sample_rate"]
     audio_data = data["audio_data"]
@@ -33,7 +43,9 @@ async def inference(request: Request) -> StreamingResponse:
     wav = torchaudio.transforms.Resample(sample_rate, target_sample_rate)(wav)
     # pad to multiple of frame_size
     wav = torch.nn.functional.pad(wav, (0, frame_size - wav.size(-1) % frame_size))
-    print("wav shape", wav.shape)
+    # # pad 10 seconds white
+    # emtpy_frames = torch.zeros(1, 1920 * 10)
+    # wav = torch.cat([emtpy_frames, wav], dim=-1)
     wav = wav.unsqueeze(0).to(device)
 
     with torch.no_grad():
@@ -41,19 +53,26 @@ async def inference(request: Request) -> StreamingResponse:
         with mimi.streaming(1):
             for offset in range(0, wav.shape[-1], frame_size):
                 frame = wav[:, :, offset : offset + frame_size]
-                codes = mimi.encode(frame)
+                codes = mimi.encode(frame.to(device))
                 assert codes.shape[-1] == 1, codes.shape
                 all_codes.append(codes)
         out_wav_chunks = []
+        # text_chunks = []
         with lm_gen.streaming(1), mimi.streaming(1):
             for code in all_codes:
                 tokens_out = lm_gen.step(code.to(device))
                 if tokens_out is not None:
-                    wav_chunk = mimi.decode(tokens_out[:, 1:])
+                    wav_chunk = mimi.decode(tokens_out[:, 1:].to(device))
                     out_wav_chunks.append(wav_chunk)
-        decoded = torch.cat(out_wav_chunks, dim=-1)
-        print("decoded shape", decoded.shape)
 
+                    # text_token = tokens_out[0, 0, 0].item()
+                    # if text_token not in (0, 3):
+                    #     text_chunk = text_tokenizer.id_to_piece(text_token)
+                    #     text_chunk = text_chunk.replace("▁", " ")
+                    #     text_chunks.append(text_chunk)
+        decoded = torch.cat(out_wav_chunks, dim=-1)
+
+    # print("Output text:", "".join(text_chunks))
     result_arr = decoded.squeeze(0).cpu()
     result = io.BytesIO()
     torchaudio.save(result, result_arr, target_sample_rate, format="wav")
@@ -64,7 +83,8 @@ async def inference(request: Request) -> StreamingResponse:
 def init():
     global mimi, device, lm_gen
     install_requirements()
-    device = get_proper_device(model_size)
+    # device = get_proper_device(model_size)
+    device = "cuda:0"
     mimi_weight = hf_hub_download(loaders.DEFAULT_REPO, loaders.MIMI_NAME)
     mimi = loaders.get_mimi(mimi_weight, device=device)
     mimi.set_num_codebooks(8)
