@@ -7,6 +7,7 @@ Expose an HTTP API for inference.
 ```bash
 conda create -n <environment-name> python=3.12
 conda activate <environment-name>
+pip install -r requirements.txt
 ```
 
 ## Usage
