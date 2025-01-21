@@ -1,6 +1,6 @@
 > process_log.txt
 port=${1:-"9234"}
-api_name=vita
+api_name=moshi
 hangup_timeout_sec=900
 hangup_interval_sec=60
 rm -f nohup.out

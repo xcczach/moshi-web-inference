@@ -8,7 +8,7 @@ parser.add_argument("--port", type=int, default=9234)
 parser.add_argument("--zh-sample", action="store_true")
 args = parser.parse_args()
 
-url = f"http://localhost:{args.port}/vita"
+url = f"http://localhost:{args.port}/moshi"
 audio_data, sample_rate = sf.read(
     "zh_sample.wav" if args.zh_sample else "en_sample.wav"
 )

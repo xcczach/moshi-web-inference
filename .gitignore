@@ -183,3 +183,5 @@ client/node_modules
 timings.json
 mlx-trace.json
 installation_complete
+output_audio.wav
+!en_sample.wav
