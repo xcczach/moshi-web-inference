@@ -2,7 +2,7 @@ import os
 
 os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
-from ml_web_inference import expose, Request, StreamingResponse, get_proper_device
+from ml_web_inference import expose, Request, StreamingResponse
 
 from huggingface_hub import hf_hub_download
 import torch

@@ -1,4 +1,4 @@
-# Moshi 1.5 web inference
+# Moshi web inference
 
 Expose an HTTP API for inference.
 
