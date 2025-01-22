@@ -1,4 +1,4 @@
-# VITA 1.5 web inference
+# Moshi 1.5 web inference
 
 Expose an HTTP API for inference.
 
