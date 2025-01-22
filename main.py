@@ -83,8 +83,7 @@ async def inference(request: Request) -> StreamingResponse:
 def init():
     global mimi, device, lm_gen
     install_requirements()
-    # device = get_proper_device(model_size)
-    device = "cuda:0"
+    device = "cuda"
     mimi_weight = hf_hub_download(loaders.DEFAULT_REPO, loaders.MIMI_NAME)
     mimi = loaders.get_mimi(mimi_weight, device=device)
     mimi.set_num_codebooks(8)
