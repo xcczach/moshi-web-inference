@@ -10,10 +10,6 @@ conda activate <environment-name>
 pip install -r requirements.txt
 ```
 
-## Note
-
-The model only supports `cuda:0` device due to the bug from the original repo.
-
 ## Usage
 
 Start the server:
